@@ -23,13 +23,16 @@
             </svg>
         </div>
     </div>
-    <div class="detailContent" v-if="!isLyricShow">
+    <div class="detailContent" v-if="!isLyricShow" @click="changeLyricShow">
         <img src="@/assets/needle-ab.png" alt="" class="img_needle" :class="{img_needle_active:!isbtnShow}">
         <img src="@/assets/cd.png" alt="" class="img_cd">
-        <img :src="musicList.al.picUrl" alt="" class="img_ar" :class="{ img_ar_active: !isbtnShow, img_ar_pauesd: isbtnShow }">
+        <img :src="musicList.al.picUrl" alt="" class="img_ar"
+             :class="{ img_ar_active: !isbtnShow, img_ar_pauesd: isbtnShow }">
     </div>
-    <div class="musicLyric">
-<!--        {{lyricList.lrc.lyric}}-->
+    <div class="musicLyric" v-else @click="changeLyricShow">
+        <p v-for="item in lyric" :key="item" :class="{active:(currentTime*1000>=item.time&&currentTime*1000<item.pre)}">
+            {{ item.lrc }}
+        </p>
     </div>
     <div class="detailFooter">
         <div class="footerTop">
@@ -50,7 +53,6 @@
             </svg>
         </div>
         <div class="footerContent">
-            {{lyricList.lyric}}
         </div>
         <div class="footer">
             <svg class="icon" aria-hidden="true">
@@ -85,13 +87,43 @@
                 isLyricShow: false,
             };
         },
-        props: ['musicList', 'play', 'isbtnShow', 'lyricList'],
+        props: ['musicList', 'play', 'isbtnShow', 'lyricList', 'currentTime'],
         mounted() {
-            console.log(this.musicList)
         },
-        methods:{
-            ...mapMutations(['updateDetailShow'])
+        methods: {
+            ...mapMutations(['updateDetailShow']),
+            changeLyricShow() {
+                this.isLyricShow = !this.isLyricShow;
+            }
         },
+        computed: {
+            lyric() {
+                let arr;
+                if (this.lyricList.lyric) {
+                    arr = this.lyricList.lyric.split(/[(\r\n)\r\n]+/).map((item, i) => {
+                        let min = item.slice(1, 3);
+                        let sec = item.slice(4, 6);
+                        let mill = item.slice(7, 10);
+                        let lrc = item.slice(11, item.length);
+                        let time = parseInt(min) * 60 * 1000 + parseInt(sec) * 1000 + parseInt(mill);
+                        if (isNaN(Number(mill))) {
+                            mill = item.slice(7, 9);
+                            lrc = item.slice(10, item.length);
+                            time = parseInt(min) * 60 * 1000 + parseInt(sec) * 1000 + parseInt(mill);
+                        }
+                        return {min, sec, mill, lrc, time}
+                    });
+                    arr.forEach((item, i) => {
+                        if (i === arr.length - 1) {
+                            item.pre = 0;
+                        } else {
+                            item.pre = arr[i + 1].time;
+                        }
+                    })
+                }
+                return arr;
+            }
+        }
     }
 </script>
 
@@ -196,6 +228,26 @@
       100% {
         transform: rotateZ(360deg);
       }
+    }
+  }
+
+  .musicLyric {
+    width: 100%;
+    height: 8rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 0.7rem;
+    overflow: scroll;
+
+    p {
+      color: rgb(190, 181, 181);
+      margin-bottom: 0.5rem;
+    }
+
+    .active {
+      color: #fff;
+      font-size: 0.5rem;
     }
   }
 

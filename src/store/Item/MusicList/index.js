@@ -67,7 +67,6 @@ const mutations = {
 const actions = {
     getLyric: async function (context, value) {
         let res = await reqMusicLyric(value)
-        console.log(res);
         context.commit("updateLyricList",res.lrc)
     },
     // getLogin:async function(context,value){

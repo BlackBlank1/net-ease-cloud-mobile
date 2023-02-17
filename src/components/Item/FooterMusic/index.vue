@@ -20,7 +20,8 @@
         </div>
         <audio ref="audio" :src="`https://music.163.com/song/media/outer/url?id=${playList[playListIndex].id}.mp3`"></audio>
         <van-popup v-model:show="detailShow" position="right" :style="{ height: '100%', width: '100%' }">
-            <MusicDetail :musicList="playList[playListIndex]" :play="play" :isbtnShow="isbtnShow" :lyricList="lyricList"></MusicDetail>
+            <MusicDetail :musicList="playList[playListIndex]" :play="play" :isbtnShow="isbtnShow"
+                         :lyricList="lyricList" :currentTime="currentTime"></MusicDetail>
         </van-popup>
     </div>
 </template>
@@ -49,11 +50,13 @@
                 },
                 lyricList: state => {
                     return state.MusicList.lyricList;
+                },
+                currentTime: state => {
+                    return state.MusicList.currentTime;
                 }
             }),
         },
         mounted() {
-            console.log(this.$refs);
             this.$store.dispatch("getLyric", this.playList[this.playListIndex].id);
             // this.updateTime()
         },
@@ -67,11 +70,11 @@
                 if (this.$refs.audio.paused) {
                     this.$refs.audio.play();
                     this.updateIsbtnShow(false);
-                    // this.updateTime(); //播放就调用函数进行传值
+                    this.updateTime(); //播放就调用函数进行传值
                 } else {
                     this.$refs.audio.pause();
                     this.updateIsbtnShow(true);
-                    // clearInterval(this.interVal); //暂停清除定时器
+                    clearInterval(this.interVal); //暂停清除定时器
                 }
             },
             addDuration: function () {
