@@ -21,7 +21,8 @@
         <audio ref="audio" :src="`https://music.163.com/song/media/outer/url?id=${playList[playListIndex].id}.mp3`"></audio>
         <van-popup v-model:show="detailShow" position="right" :style="{ height: '100%', width: '100%' }">
             <MusicDetail :musicList="playList[playListIndex]" :play="play" :isbtnShow="isbtnShow"
-                         :lyricList="lyricList" :currentTime="currentTime"></MusicDetail>
+                         :lyricList="lyricList" :playList="playList"
+            :playListIndex="playListIndex" :addDuration="addDuration"></MusicDetail>
         </van-popup>
     </div>
 </template>
@@ -51,18 +52,15 @@
                 lyricList: state => {
                     return state.MusicList.lyricList;
                 },
-                currentTime: state => {
-                    return state.MusicList.currentTime;
-                }
             }),
         },
         mounted() {
             this.$store.dispatch("getLyric", this.playList[this.playListIndex].id);
-            // this.updateTime()
+            this.updateTime()
         },
         updated() {
             this.$store.dispatch("getLyric", this.playList[this.playListIndex].id);
-            // this.addDuration()
+            this.addDuration()
         },
         methods: {
             play: function () {

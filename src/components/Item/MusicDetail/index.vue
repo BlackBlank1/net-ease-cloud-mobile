@@ -2,7 +2,7 @@
     <img :src="musicList.al.picUrl" alt="" class="bgImg">
     <div class="detailTop">
         <div class="detailTopLeft">
-            <svg class="icon liebiao" aria-hidden="true" @click="updateDetailShow">
+            <svg class="icon liebiao" aria-hidden="true" @click="backHome">
                 <use xlink:href="#icon-zuojiantou"></use>
             </svg>
             <div class="leftMarquee">
@@ -29,7 +29,7 @@
         <img :src="musicList.al.picUrl" alt="" class="img_ar"
              :class="{ img_ar_active: !isbtnShow, img_ar_pauesd: isbtnShow }">
     </div>
-    <div class="musicLyric" v-else @click="changeLyricShow">
+    <div class="musicLyric" v-else @click="changeLyricShow" ref="musicLyric">
         <p v-for="item in lyric" :key="item" :class="{active:(currentTime*1000>=item.time&&currentTime*1000<item.pre)}">
             {{ item.lrc }}
         </p>
@@ -53,12 +53,13 @@
             </svg>
         </div>
         <div class="footerContent">
+            <input type="range" class="range" min="0" :max="duration" v-model="currentTime" step="0.05">
         </div>
         <div class="footer">
             <svg class="icon" aria-hidden="true">
                 <use xlink:href="#icon-xunhuan"></use>
             </svg>
-            <svg class="icon" aria-hidden="true">
+            <svg class="icon" aria-hidden="true" @click="goPlay(-1)">
                 <use xlink:href="#icon-shangyishoushangyige"></use>
             </svg>
             <svg class="icon bofang" aria-hidden="true" v-if="isbtnShow" @click="play">
@@ -67,7 +68,7 @@
             <svg class="icon bofang" aria-hidden="true" v-else @click="play">
                 <use xlink:href="#icon-zanting"></use>
             </svg>
-            <svg class="icon" aria-hidden="true">
+            <svg class="icon" aria-hidden="true" @click="goPlay(1)">
                 <use xlink:href="#icon-xiayigexiayishou"></use>
             </svg>
             <svg class="icon" aria-hidden="true">
@@ -87,13 +88,27 @@
                 isLyricShow: false,
             };
         },
-        props: ['musicList', 'play', 'isbtnShow', 'lyricList', 'currentTime'],
+        props: ['musicList', 'play', 'isbtnShow', 'lyricList', 'playList', 'playListIndex', 'addDuration'],
         mounted() {
+            this.addDuration();
         },
         methods: {
-            ...mapMutations(['updateDetailShow']),
+            ...mapMutations(['updateDetailShow', 'updatePlayListIndex']),
             changeLyricShow() {
                 this.isLyricShow = !this.isLyricShow;
+            },
+            backHome() {
+                this.updateDetailShow();
+                this.isLyricShow = false;
+            },
+            goPlay(num) {
+                let index = this.playListIndex + num;
+                if (index < 0) {
+                    index = this.playList.length - 1;
+                } else if (index === this.playList.length) {
+                    index = 0;
+                }
+                this.updatePlayListIndex(index);
             }
         },
         computed: {
@@ -114,14 +129,42 @@
                         return {min, sec, mill, lrc, time}
                     });
                     arr.forEach((item, i) => {
-                        if (i === arr.length - 1) {
-                            item.pre = 0;
+                        if (i === arr.length - 1 || isNaN(arr[i + 1].time)) {
+                            item.pre = 100000;
                         } else {
                             item.pre = arr[i + 1].time;
                         }
                     })
                 }
                 return arr;
+            },
+            ...mapState({
+                duration: state => {
+                    return state.MusicList.duration;
+                },
+                currentTime: state => {
+                    return state.MusicList.currentTime;
+                },
+            })
+        },
+        watch: {
+            currentTime(newValue) {
+                let p = document.querySelector("p.active");
+                // console.log([p]);
+                if (p) {
+                    if (p.offsetTop > 300) {
+                        this.$refs.musicLyric.scrollTop = p.offsetTop - 300;
+                    }
+                }
+
+                if (newValue === this.duration) {
+                    if (this.playListIndex === this.playList.length - 1) {
+                        this.updatePlayListIndex(0);
+                        this.play();
+                    } else {
+                        this.updatePlayListIndex(this.playListIndex + 1);
+                    }
+                }
             }
         }
     }
@@ -133,7 +176,7 @@
     height: 100%;
     position: absolute;
     z-index: -1;
-    filter: blur(70px);
+    filter: blur(60px);
   }
 
   .detailTop {
@@ -247,7 +290,7 @@
 
     .active {
       color: #fff;
-      font-size: 0.5rem;
+      font-size: 0.3rem;
     }
   }
 
