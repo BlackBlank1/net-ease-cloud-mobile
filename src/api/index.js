@@ -17,7 +17,12 @@ export const reqMusicItemList = (data) => {
     return requests({url:'/playlist/detail?id=' + data, method:"get"});
 }
 export const reqMusicDetailList = (data) => {
-    //获取推荐歌单数据
     return requests({url:'/playlist/track/all?id=' + data + '&limit=20&offset=0', method:"get"});
+}
+
+
+export const reqMusicLyric = (data) => {
+    //获取歌词
+    return requests({url:'/lyric?id=' + data, method:"get"});
 }
 

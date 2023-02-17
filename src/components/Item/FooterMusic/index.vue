@@ -20,7 +20,7 @@
         </div>
         <audio ref="audio" :src="`https://music.163.com/song/media/outer/url?id=${playList[playListIndex].id}.mp3`"></audio>
         <van-popup v-model:show="detailShow" position="right" :style="{ height: '100%', width: '100%' }">
-            <MusicDetail :musicList="playList[playListIndex]"></MusicDetail>
+            <MusicDetail :musicList="playList[playListIndex]" :play="play" :isbtnShow="isbtnShow" :lyricList="lyricList"></MusicDetail>
         </van-popup>
     </div>
 </template>
@@ -46,16 +46,19 @@
                 },
                 detailShow: state => {
                     return state.MusicList.detailShow;
+                },
+                lyricList: state => {
+                    return state.MusicList.lyricList;
                 }
             }),
         },
         mounted() {
             console.log(this.$refs);
-            // this.$store.dispatch("getLyric", this.playList[this.playListIndex].id);
+            this.$store.dispatch("getLyric", this.playList[this.playListIndex].id);
             // this.updateTime()
         },
         updated() {
-            // this.$store.dispatch("getLyric", this.playList[this.playListIndex].id);
+            this.$store.dispatch("getLyric", this.playList[this.playListIndex].id);
             // this.addDuration()
         },
         methods: {
